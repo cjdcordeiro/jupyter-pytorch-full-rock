@@ -11,7 +11,15 @@ enables users to perform CPU-accelerated tasks using PyTorch from within a Jupyt
 
 Both PyTorch and Jupyter are installed in Conda environment, which is automatically activated.
 
-## Build reference
+## Quick start
+
+To get started with this image, you can:
+
+```bash
+docker run --rm ghcr.io/canonical/jupyter-pytorch-full:v1.7-rc.1
+```
+
+## Build references
 
 Using the [Makefile](https://github.com/kubeflow/kubeflow/blob/68bf3da20c95f38051b1b60c787e11705cc5d645/components/example-notebook-servers/jupyter-pytorch-full/Makefile) for the original image, I was able to
 recreate the image in a few stages. The upstream image is built from the following layers:
@@ -23,7 +31,7 @@ recreate the image in a few stages. The upstream image is built from the followi
 
 In this version, the last three layers are combined into a single `part` in [`rockcraft.yaml`](./rockcraft.yaml) named `conda-jupyter`.
 
-## Usage
+## How to build
 
 ```bash
 # Install some deps
