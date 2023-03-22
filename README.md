@@ -16,7 +16,7 @@ Both PyTorch and Jupyter are installed in Conda environment, which is automatica
 To get started with this image, you can:
 
 ```bash
-docker run --rm ghcr.io/canonical/jupyter-pytorch-full:v1.7-rc.1
+docker run --rm ghcr.io/canonical/jupyter-pytorch-full:latest
 ```
 
 ## Build references

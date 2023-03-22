@@ -7,7 +7,7 @@ description: |
 
   Both PyTorch and Jupyter are installed in Conda environment, which is
   automatically activated.
-version: v1.7-rc.1
+version: v1.7.0-rc.1
 license: Apache-2.0
 base: ubuntu:22.04
 platforms:
@@ -81,21 +81,18 @@ parts:
     build-packages:
       - lsb-release
       - wget
-    override-build: |
-      export MINIFORGE_ARCH="x86_64"
-      export MINIFORGE_VERSION="4.10.1-4"
-      export PIP_VERSION="21.1.2"
-      export PYTHON_VERSION="3.8.10"
-
+    build-environment:
       # The URL and tag to fetch Kubeflow requirements files from
-      export KF_REPO="https://raw.githubusercontent.com/kubeflow/kubeflow"
-      export KF_TAG="v1.7.0-rc.1"
-      export KF_BASE_URL="${KF_REPO}/${KF_TAG}/components/example-notebook-servers"
-
-      # Set up some directories we'll use
-      export HOME="/home/jovyan"
-      export CONDA_DIR="/opt/conda"
-      export CONDA_BIN="${CONDA_DIR}/bin"
+      # Use this to adjust the Kubeflow version
+      - KF_BASE_URL: "https://raw.githubusercontent.com/kubeflow/kubeflow/v1.7.0-rc.1/components/example-notebook-servers"
+      - MINIFORGE_ARCH: "x86_64"
+      - MINIFORGE_VERSION: "4.10.1-4"
+      - PIP_VERSION: "21.1.2"
+      - PYTHON_VERSION: "3.8.10"
+      - HOME: "/home/jovyan"
+      - CONDA_DIR: "/opt/conda"
+      - CONDA_BIN: "/opt/conda/bin"
+    override-build: |
       mkdir -p "$CONDA_DIR" "$HOME"
 
       # Download the miniforge installer
