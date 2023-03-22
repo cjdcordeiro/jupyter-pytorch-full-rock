@@ -1,0 +1,183 @@
+name: jupyter-pytorch-full
+summary: An image for using Jupyter & PyTorch on CPUs
+description: |
+  This image is used as part of the Charmed Kubeflow product. It is deployed
+  in a user namespace, and enables users to perform CPU-accelerated tasks
+  using PyTorch from within a Jupyter Notebook.
+
+  Both PyTorch and Jupyter are installed in Conda environment, which is
+  automatically activated.
+version: v1.7-rc.1
+license: Apache-2.0
+base: ubuntu:20.04
+platforms:
+  amd64:
+
+entrypoint: ["/bin/pebble", "run", "-v"]
+
+env:
+  - NB_USER: jovyan
+  - NB_UID: 1000
+  - NB_PREFIX: /
+  - HOME: /home/jovyan
+  - SHELL: /bin/bash
+  - LANG: en_US.UTF-8
+  - LANGUAGE: en_US.UTF-8
+  - LC_ALL: en_US.UTF-8
+  - PATH: /opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+parts:
+  overlay-pkgs:
+    plugin: nil
+    # These were taken from the upstream base image. They *may not* all be required.
+    overlay-packages:
+      - apt-transport-https
+      - bash
+      - bzip2
+      - ca-certificates
+      - curl
+      - git
+      - gnupg
+      - gnupg2
+      - locales
+      - lsb-release
+      - nano
+      - software-properties-common
+      - tzdata
+      - unzip
+      - vim
+      - wget
+      - zip
+
+  kubectl:
+    plugin: nil
+    stage-snaps:
+      - kubectl/1.21/stable
+    organize:
+      kubectl: bin/kubectl
+    stage:
+      - bin/kubectl
+
+  nodejs:
+    plugin: dump
+    # This is a bit of a hack to install a deb from an external apt repository.
+    # Once the apt repository support lands in Rockcraft this should be replaced.
+    source: https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.21.3-deb-1nodesource1_amd64.deb
+    source-type: deb
+
+  generate-locale:
+    plugin: nil
+    build-packages:
+      - locales
+    override-build: |
+      echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+      locale-gen
+      mkdir -p $CRAFT_PART_INSTALL/usr/lib/locale $CRAFT_PART_INSTALL/usr/share/i18n/locales
+      cp /usr/lib/locale/locale-archive $CRAFT_PART_INSTALL/usr/lib/locale/locale-archive
+      cp -r /usr/share/i18n/locales $CRAFT_PART_INSTALL/usr/share/i18n/locales
+
+  conda-jupyter:
+    plugin: nil
+    build-packages:
+      - lsb-release
+      - wget
+    override-build: |
+      export MINIFORGE_ARCH="x86_64"
+      export MINIFORGE_VERSION="4.10.1-4"
+      export PIP_VERSION="21.1.2"
+      export PYTHON_VERSION="3.8.10"
+
+      # The URL and tag to fetch Kubeflow requirements files from
+      export KF_REPO="https://raw.githubusercontent.com/kubeflow/kubeflow"
+      export KF_TAG="v1.7.0-rc.1"
+      export KF_BASE_URL="${KF_REPO}/${KF_TAG}/components/example-notebook-servers"
+
+      # Set up some directories we'll use
+      export HOME="/home/jovyan"
+      export CONDA_DIR="/opt/conda"
+      export CONDA_BIN="${CONDA_DIR}/bin"
+      mkdir -p "$CONDA_DIR" "$HOME"
+
+      # Download the miniforge installer
+      wget -qO miniforge.sh \
+        "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-${MINIFORGE_ARCH}.sh"
+
+      # Download the miniforge install shasums
+      wget -qO miniforge.sh.sha256 \
+        "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-${MINIFORGE_ARCH}.sh.sha256"
+
+      # Verify that the downloaded installer is correct
+      echo "$(cat miniforge.sh.sha256 | awk '{ print $1; }') miniforge.sh" | sha256sum --check
+
+      # Run the miniforge installer
+      /bin/sh miniforge.sh -b -f -p "${CONDA_DIR}"
+
+      # Configure conda
+      "${CONDA_BIN}/conda" config --system --set auto_update_conda false
+      "${CONDA_BIN}/conda" config --system --set show_channel_urls true
+
+      echo "conda ${MINIFORGE_VERSION:0:-2}" >> "${CONDA_DIR}/conda-meta/pinned"
+      echo "python ${PYTHON_VERSION}" >> "${CONDA_DIR}/conda-meta/pinned"
+
+      # Install the correct versions of python, conda, pip
+      "${CONDA_BIN}/conda" install -y -q \
+                          python="${PYTHON_VERSION}" \
+                          conda="${MINIFORGE_VERSION:0:-2}" \
+                          pip="${PIP_VERSION}"
+
+      # Clean up
+      "${CONDA_BIN}/conda" update -y -q --all
+      "${CONDA_BIN}/conda" clean -a -f -y
+
+      # Install the jupyter python requirements
+      wget -qO jupyter-requirements.txt "${KF_BASE_URL}/jupyter/requirements.txt"
+      "${CONDA_BIN}/pip" install --no-cache-dir -r jupyter-requirements.txt
+
+      # Generate a jupyter lab config
+      "${CONDA_BIN}/jupyter" lab --generate-config --allow-root
+
+      # Install the jupyter-pytorch cpu requirements
+      wget -qO requirements.txt "${KF_BASE_URL}/jupyter-pytorch/cpu-requirements.txt"
+      "${CONDA_BIN}/pip" install --no-cache-dir -r requirements.txt
+
+      # Install the jupyter-pytorch-full cpu requirements
+      wget -qO requirements.txt "${KF_BASE_URL}/jupyter-pytorch-full/requirements.txt"
+      "${CONDA_BIN}/pip" install --no-cache-dir -r requirements.txt
+
+      # Create some directories for staging files
+      mkdir -p "${CRAFT_PART_INSTALL}/opt" "${CRAFT_PART_INSTALL}/etc" "${CRAFT_PART_INSTALL}/home"
+
+      # Write some config files for activating conda in user sessions
+      echo ". /opt/conda/etc/profile.d/conda.sh" >> "${HOME}/.bashrc"
+      echo ". /opt/conda/etc/profile.d/conda.sh" >> "${CRAFT_PART_INSTALL}/etc/profile"
+      echo "conda activate base" >> "${HOME}/.bashrc"
+      echo "conda activate base" >> "${CRAFT_PART_INSTALL}/etc/profile"
+
+      # Do some cleanup
+      rm -rf "${HOME}/.wget-hsts" "${HOME}/.cache"
+
+      # Stage the conda directories
+      cp -r "${CONDA_DIR}" "${CRAFT_PART_INSTALL}/opt/conda"
+      cp -r "${HOME}" "${CRAFT_PART_INSTALL}/${HOME}"
+
+  default-config:
+    plugin: dump
+    source: files
+    organize:
+      001-default.yaml: var/lib/pebble/default/layers/001-default.yaml
+      jupyter-entrypoint.sh: opt/jupyter-entrypoint.sh
+    stage:
+      - var/lib/pebble/default/layers/001-default.yaml
+      - opt/jupyter-entrypoint.sh
+
+  non-root-user:
+    plugin: nil
+    after: [conda-jupyter]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      useradd -R $CRAFT_OVERLAY -M -s /bin/bash -N -u 1000 jovyan
+    override-prime: |
+      craftctl default
+      chown -R 1000:users home/jovyan
+      chown -R 1000:users bin
+      chown -R 1000:users opt/conda

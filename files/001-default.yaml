@@ -1,0 +1,12 @@
+summary: jupyter-pytorch-full
+description: |
+  A simple Pebble layer included with the underlying 
+  ROCK that can be used to start and test the image
+services:
+  jupyter:
+    override: replace
+    startup: enabled
+    user: jovyan
+    command: /opt/jupyter-entrypoint.sh
+    environment:
+      NB_PREFIX: "/"
