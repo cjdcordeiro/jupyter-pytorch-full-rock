@@ -162,10 +162,8 @@ parts:
     source: files
     organize:
       001-default.yaml: var/lib/pebble/default/layers/001-default.yaml
-      jupyter-entrypoint.sh: opt/jupyter-entrypoint.sh
     stage:
       - var/lib/pebble/default/layers/001-default.yaml
-      - opt/jupyter-entrypoint.sh
 
   non-root-user:
     plugin: nil
