@@ -9,7 +9,7 @@ description: |
   automatically activated.
 version: v1.7-rc.1
 license: Apache-2.0
-base: ubuntu:20.04
+base: ubuntu:22.04
 platforms:
   amd64:
 

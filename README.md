@@ -50,4 +50,4 @@ $ sudo docker run --rm "canonical/jupyter-pytorch-full:${version}"
 ## TODO
 
 - [ ] Test with a real Charmed Kubeflow
-- [ ] Upgrade to Ubuntu 22.04
+- [x] Upgrade to Ubuntu 22.04
