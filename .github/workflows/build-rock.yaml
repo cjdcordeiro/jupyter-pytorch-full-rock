@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: jupyter-pytorch-full-sbom
-          path: "${{ inputs.rock-name}}.sbom.json"
+          path: jupyter-pytorch-full.sbom.json
       - name: Upload locally built ROCK artifact
         uses: actions/upload-artifact@v3
         with:
