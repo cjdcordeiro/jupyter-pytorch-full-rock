@@ -28,6 +28,13 @@ services:
       LANGUAGE: en_US.UTF-8
       LC_ALL: en_US.UTF-8
 
+package-repositories:
+  - type: apt
+    components: [main]
+    suites: [jammy]
+    key-id: 9FD3B784BC1C6FC31A8A0A1C1655A0AB68576280
+    url: https://deb.nodesource.com/node_14.x
+
 parts:
   overlay-pkgs:
     plugin: nil
@@ -61,11 +68,8 @@ parts:
       - bin/kubectl
 
   nodejs:
-    plugin: dump
-    # This is a bit of a hack to install a deb from an external apt repository.
-    # Once the apt repository support lands in Rockcraft this should be replaced.
-    source: https://deb.nodesource.com/node_14.x/pool/main/n/nodejs/nodejs_14.21.3-deb-1nodesource1_amd64.deb
-    source-type: deb
+    plugin: nil
+    stage-packages: [nodejs]
 
   generate-locale:
     plugin: nil
