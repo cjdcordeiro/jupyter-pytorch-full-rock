@@ -36,10 +36,10 @@ package-repositories:
     url: https://deb.nodesource.com/node_14.x
 
 parts:
-  overlay-pkgs:
+  base-pkgs:
     plugin: nil
     # These were taken from the upstream base image. They *may not* all be required.
-    overlay-packages:
+    stage-packages:
       - apt-transport-https
       - bash
       - bzip2
