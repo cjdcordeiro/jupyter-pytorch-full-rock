@@ -1,0 +1,14 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build ROCK
+        uses: canonical/craft-actions/rockcraft-pack@main

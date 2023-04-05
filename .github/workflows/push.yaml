@@ -1,4 +1,4 @@
-name: Build ROCK
+name: Push
 
 on:
   workflow_dispatch: {}
