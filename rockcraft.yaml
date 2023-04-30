@@ -13,7 +13,12 @@ base: ubuntu:22.04
 platforms:
   amd64:
 
-entrypoint: ["/bin/pebble", "run", "-v"]
+services:
+  jupyter:
+    override: replace
+    startup: enabled
+    user: jovyan
+    command: /opt/conda/bin/jupyter lab --notebook-dir="/home/jovyan" --ip=0.0.0.0 --no-browser --port=8888 --ServerApp.token="" --ServerApp.password="" --ServerApp.allow_origin="*" --ServerApp.base_url="/" --ServerApp.authenticate_prometheus=False
 
 env:
   - NB_USER: jovyan
@@ -156,14 +161,6 @@ parts:
       # Stage the conda directories
       cp -r "${CONDA_DIR}" "${CRAFT_PART_INSTALL}/opt/conda"
       cp -r "${HOME}" "${CRAFT_PART_INSTALL}/${HOME}"
-
-  default-config:
-    plugin: dump
-    source: files
-    organize:
-      001-default.yaml: var/lib/pebble/default/layers/001-default.yaml
-    stage:
-      - var/lib/pebble/default/layers/001-default.yaml
 
   non-root-user:
     plugin: nil
