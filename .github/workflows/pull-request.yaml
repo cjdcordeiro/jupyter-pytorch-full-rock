@@ -10,5 +10,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build ROCK
+      - name: Build rock
         uses: canonical/craft-actions/rockcraft-pack@main

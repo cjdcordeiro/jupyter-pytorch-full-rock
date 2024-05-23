@@ -13,10 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build ROCK
+      - name: Build rock
         uses: canonical/craft-actions/rockcraft-pack@main
 
-      - name: Upload ROCK to ghcr.io
+      - name: Upload rock to ghcr.io
         run: |
           sudo snap install yq
           VERSION=$(yq -r '.version' rockcraft.yaml)
@@ -43,7 +43,7 @@ jobs:
         with:
           name: jupyter-pytorch-full-sbom
           path: jupyter-pytorch-full.sbom.json
-      - name: Upload locally built ROCK artifact
+      - name: Upload locally built rock artifact
         uses: actions/upload-artifact@v3
         with:
           name: jupyter-pytorch-full-rock

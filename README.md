@@ -3,7 +3,7 @@
 > ⚠️ WARNING ⚠️ This is very much alpha software! This has yet to be tested in a real deployment
 > and serves as a proof-of-concept
 
-This ROCK is a recreation of the `kubeflownotebookswg/jupyter-pytorch-full` image using
+This rock is a recreation of the `kubeflownotebookswg/jupyter-pytorch-full` image using
 [rockcraft](https://github.com/canonical/rockcraft).
 
 This image is used as part of the Charmed Kubeflow product. It is deployed in a user namespace, and
@@ -39,14 +39,14 @@ $ sudo snap install rockcraft --classic --edge
 $ sudo snap install skopeo --edge --devmode
 $ sudo snap install yq
 
-# Pack the ROCK (optionally add --verbose)
+# Pack the rock (optionally add --verbose)
 $ rockcraft pack
 $ version=$(yq -r '.version' rockcraft.yaml)
 
 # For the following commands, you must either use `sudo` or ensure your user is a member of the
 # `docker` group, or the commands will fail.
 
-# Import the ROCK into the local docker image cache
+# Import the rock into the local docker image cache
 $ sudo skopeo --insecure-policy copy \
     oci-archive:"jupyter-pytorch-full_${version}_amd64.rock" \
     docker-daemon:"canonical/jupyter-pytorch-full:${version}"
